@@ -24,6 +24,7 @@ jobs:
   Cleanup:
     runs-on: ubuntu-latest
     needs: [build]
+    if: always()
     steps:
       # Runs a single command using the runners shell
       - name: Run a one-line script
