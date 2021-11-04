@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "stgName": {
-      "value": "opnworkflowstg-vws-1"
+      "value": "opnworkflowstgvws1"
     }
   }
 }
