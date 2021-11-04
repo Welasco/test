@@ -21,3 +21,11 @@ jobs:
         run: |
           curl -k https://www.bingasdfouwerkhsdifuy.com --verbose
 
+  Cleanup:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: |
+          echo 'Claned up'
