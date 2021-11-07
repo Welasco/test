@@ -1,4 +1,5 @@
 param stgName string
+param skip string = 'skip'
 
 resource stg 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: stgName
