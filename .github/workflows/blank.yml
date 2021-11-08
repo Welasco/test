@@ -38,4 +38,7 @@ jobs:
           echo ${GITHUB_REF#refs/heads/}
           branch=${GITHUB_REF#refs/heads/}
           echo "Branch Name: " $branch
+          branchName=${GITHUB_REF#refs/heads/}
+          OpnScriptURI="https://raw.githubusercontent.com/dmauser/opnazure/$branchName/scripts/"          
+          echo $OpnScriptURI
           echo Hello, world!
