@@ -239,6 +239,8 @@ $scriptblock | out-file scriptblock.ps1 -Width 4096
 
 #./psexec -accepteula -u $User -p $Password powershell -command $scriptblock
 
+whoami /all > whoami.txt
+
 # Command worked between two local users but not from Azure
 # Next time test with another extension
 ./psexec -accepteula -u $User -p $Password powershell -ExecutionPolicy Unrestricted -NonInteractive -file C:\Tools\PSTools\scriptblock.ps1
