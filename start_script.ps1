@@ -1,11 +1,12 @@
-param (
-    [Parameter(Mandatory=$true)]
-    [string]$User,
-    [Parameter(Mandatory=$true)]
-    [string]$Password
-)
+# param (
+#     [Parameter(Mandatory=$true)]
+#     [string]$User,
+#     [Parameter(Mandatory=$true)]
+#     [string]$Password
+# )
 
 $scriptblock = {
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { Start-Process powershell.exe "-ExecutionPolicy Unrestricted -File `"$PSCommandPath`"" -Verb RunAs; exit }
 
 # Creating InstallDir
 $Downloaddir = "C:\InstallDir"
@@ -191,6 +192,15 @@ Log("#############################")
 Disable-ScheduledTask Bootstrap
 
 Log("#############################")
+Log("#Clean RunOnce Registry")
+Log("#############################")
+Log("Clean RunOnce Registry")
+reg load hklm\temphive C:\Users\Default\NTUSER.DAT
+$RunOnceKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+Remove-ItemProperty $RunOnceKey "NextRun"
+reg unload hklm\temphive
+
+Log("#############################")
 Log("#Reboot")
 Log("#############################")
 Log("Restarting Computer")
@@ -202,21 +212,15 @@ $ProgressPreference = 'SilentlyContinue'
 
 # Creating InstallDir
 $Downloaddir = "C:\InstallDir"
+$scriptblock_fileName = "scriptblock.ps1"
 if ((Test-Path -Path $Downloaddir) -ne $true) {
     mkdir $Downloaddir
 }
 cd $Downloaddir
 
-$scriptblock | out-file scriptblock.ps1 -Width 4096
+$scriptblock | out-file $scriptblock_fileName -Width 4096
 
-$pass = $Password | convertto-securestring -AsPlainText -Force
-$Credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $user,$pass
-$Password = $Credential.GetNetworkCredential().Password
-
-$action = New-ScheduledTaskAction -Execute "powershell" -Argument "-ExecutionPolicy Unrestricted -NonInteractive -file $Downloaddir\scriptblock.ps1"
-$trigger2 = Get-CimClass "MSFT_TaskRegistrationTrigger" -Namespace "Root/Microsoft/Windows/TaskScheduler"
-$principal = New-ScheduledTaskPrincipal -UserId $User -RunLevel Highest
-$task = New-ScheduledTask -Action $action -Trigger $trigger2 -Principal $principal
-Register-ScheduledTask Bootstrap -InputObject $task -User $User -Password $Password
-#Start-ScheduledTask T1
-#Get-ScheduledTaskInfo T1
+reg load hklm\temphive C:\Users\Default\NTUSER.DAT
+$RunOnceKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+set-itemproperty $RunOnceKey "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + "$Downloaddir\$scriptblock_fileName")
+reg unload hklm\temphive
