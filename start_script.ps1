@@ -4,42 +4,6 @@ param (
     [Parameter(Mandatory=$true)]
     [string]$Password
 )
-# $scriptblock = {
-# Get-ChildItem C:\Users | Add-Content C:\test.txt
-# }
-
-# $user='.\xxxxx'
-# $pass= 'xxxxx' | convertto-securestring -AsPlainText -Force
-# $Credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $user,$pass
-
-# #Start-process powershell.exe -Credential $Credential -NoNewWindow -ArgumentList '-executionpolicy bypass -WindowStyle Hidden -NonInteractive', '-file script.ps1' -WorkingDirectory c:\users\azureuser\desktop
-# #Start-process powershell.exe -Credential $Credential -NoNewWindow -ArgumentList '-executionpolicy bypass -WindowStyle Hidden -NonInteractive', "-Command $scriptblock" -WorkingDirectory c:\users -LoadUserProfile
-# Start-process powershell.exe -NoNewWindow -ArgumentList '-executionpolicy bypass -WindowStyle Hidden -NonInteractive', "-Command $scriptblock" -WorkingDirectory c:\users -LoadUserProfile
-
-function Log($Message){
-    Write-Output (([System.DateTime]::Now).ToString() + " " + $Message)
-}
-
-function Add-SystemPaths([array] $PathsToAdd) {
-    $VerifiedPathsToAdd = ""
-    foreach ($Path in $PathsToAdd) {
-        if ($Env:Path -like "*$Path*") {
-            Log("  Path to $Path already added")
-        }
-        else {
-            $VerifiedPathsToAdd += ";$Path";Log("  Path to $Path needs to be added")
-        }
-    }
-    if ($VerifiedPathsToAdd -ne "") {
-        Log("Adding paths: $VerifiedPathsToAdd")
-        [System.Environment]::SetEnvironmentVariable("PATH", $Env:Path + "$VerifiedPathsToAdd","Machine")
-        Log("Note: Reloading Path env to the current script")
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-    }
-}
-
-$ProgressPreference = 'SilentlyContinue'
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $scriptblock = {
 
@@ -222,25 +186,37 @@ if ($DockerInstallResult -eq 0) {
 }
 
 Log("#############################")
+Log("#Disabling ScheduTask Bootstrap")
+Log("#############################")
+Disable-ScheduledTask Bootstrap
+
+Log("#############################")
 Log("#Reboot")
 Log("#############################")
 Log("Restarting Computer")
 Restart-Computer -Force
 }
 
-mkdir C:\Tools
-cd C:\Tools
-Invoke-WebRequest -Uri "https://download.sysinternals.com/files/PSTools.zip" -OutFile C:\Tools\PSTools.zip
-Expand-Archive C:\Tools\PSTools.zip -Force
-#Add-SystemPaths C:\Tools\PSTools
-cd C:\Tools\PSTools
-#$scriptblock | out-file scriptblock.ps1 -Encoding utf8
+$ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# Creating InstallDir
+$Downloaddir = "C:\InstallDir"
+if ((Test-Path -Path $Downloaddir) -ne $true) {
+    mkdir $Downloaddir
+}
+cd $Downloaddir
+
 $scriptblock | out-file scriptblock.ps1 -Width 4096
 
-#./psexec -accepteula -u $User -p $Password powershell -command $scriptblock
+$pass = $Password | convertto-securestring -AsPlainText -Force
+$Credential = new-object -typename System.Management.Automation.PSCredential -argumentlist $user,$pass
+$Password = $Credential.GetNetworkCredential().Password
 
-whoami /all > whoami.txt
-
-# Command worked between two local users but not from Azure
-# Next time test with another extension
-./psexec -accepteula -u $User -p $Password powershell -ExecutionPolicy Unrestricted -NonInteractive -file C:\Tools\PSTools\scriptblock.ps1
+$action = New-ScheduledTaskAction -Execute "powershell" -Argument "-ExecutionPolicy Unrestricted -NonInteractive -file $Downloaddir\scriptblock.ps1"
+$trigger2 = Get-CimClass "MSFT_TaskRegistrationTrigger" -Namespace "Root/Microsoft/Windows/TaskScheduler"
+$principal = New-ScheduledTaskPrincipal -UserId $User -RunLevel Highest
+$task = New-ScheduledTask -Action $action -Trigger $trigger2 -Principal $principal
+Register-ScheduledTask Bootstrap -InputObject $task -User $User -Password $Password
+#Start-ScheduledTask T1
+#Get-ScheduledTaskInfo T1
