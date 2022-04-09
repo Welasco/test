@@ -196,7 +196,7 @@ Log("#Clean RunOnce Registry")
 Log("#############################")
 Log("Clean RunOnce Registry")
 reg load hklm\temphive C:\Users\Default\NTUSER.DAT
-$RunOnceKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+$RunOnceKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\Run"
 Remove-ItemProperty $RunOnceKey "NextRun"
 reg unload hklm\temphive
 
@@ -221,6 +221,6 @@ cd $Downloaddir
 $scriptblock | out-file $scriptblock_fileName -Width 4096
 
 reg load hklm\temphive C:\Users\Default\NTUSER.DAT
-$RunOnceKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+$RunOnceKey = "HKLM:\temphive\Software\Microsoft\Windows\CurrentVersion\Run"
 set-itemproperty $RunOnceKey "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + "$Downloaddir\$scriptblock_fileName")
 reg unload hklm\temphive
