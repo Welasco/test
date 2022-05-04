@@ -72,4 +72,3 @@ jobs:
         uses: actions-x/commit@v6
         with:
           message: Adding auto compiled bicep json
-          branch: v3
