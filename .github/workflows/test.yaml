@@ -64,7 +64,7 @@ jobs:
         run: |
           cd ARM
           env
-          echo 'Branch: ${GITHUB_REF#refs/heads/}'
+          echo 'Branch: ${{ GITHUB_REF#refs/heads/ }}'
           dir
           ls -la
 
@@ -73,4 +73,4 @@ jobs:
         uses: actions-x/commit@v6
         with:
           message: Adding auto compiled bicep json
-          branch: ${GITHUB_REF#refs/heads/}
+          branch: v3
