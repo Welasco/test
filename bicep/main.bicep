@@ -27,8 +27,8 @@ resource stg2 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   kind: 'BlobStorage'
 }
 
-resource stg3 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  name: '${stgName}3'
+resource stg4 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+  name: '${stgName}4'
   location: 'eastus'
   sku: {
     name: 'Standard_LRS'
