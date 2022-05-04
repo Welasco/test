@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.6.1.6515",
-      "templateHash": "5051273724665961336"
+      "templateHash": "15241333454886694141"
     }
   },
   "parameters": {
@@ -22,6 +22,19 @@
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2021-06-01",
       "name": "[parameters('stgName')]",
+      "location": "eastus",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {
+        "accessTier": "Cool"
+      },
+      "kind": "BlobStorage"
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}2', parameters('stgName'))]",
       "location": "eastus",
       "sku": {
         "name": "Standard_LRS"
