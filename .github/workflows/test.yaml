@@ -63,7 +63,8 @@ jobs:
         shell: pwsh
         run: |
           cd ARM
-          echo ${GITHUB_REF#refs/heads/}
+          env
+          echo 'Branch: ${GITHUB_REF#refs/heads/}'
           dir
           ls -la
 
