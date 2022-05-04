@@ -69,7 +69,7 @@ jobs:
           allow-no-subscriptions: false
 
       - name: Validate Infrastructure deployment
-        uses: Azure/cli@v1.0.6
+        uses: Azure/cli@v1
         with:
           azcliversion: ${{ env.AZCLIVERSION }}
           inlineScript: |
