@@ -64,7 +64,6 @@ jobs:
         run: |
           cd ARM
           env
-          echo 'Branch: ${{ GITHUB_REF#refs/heads/ }}'
           dir
           ls -la
 
