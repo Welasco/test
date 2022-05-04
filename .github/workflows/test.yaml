@@ -33,7 +33,7 @@ jobs:
         run: |
           echo 'ghen : ${{ github.event_name }}'
           dir
-          ls
+          ls -la
 
       - name: Install Bicep
         shell: pwsh
@@ -58,14 +58,13 @@ jobs:
           }
 
           Copy-Item bicep/*.parameters.* ARM -Force
-          Copy-Item bicep/uiFormDefinition.json ARM -Force
 
       - name: ContextCheck
         shell: pwsh
         run: |
           cd ARM
           dir
-          ls
+          ls -la
 
       - name: GIT Push Json file
         uses: actions-x/commit@v2
