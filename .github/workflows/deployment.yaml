@@ -1,0 +1,76 @@
+name: Deployment Checker - Active-Active
+
+on:
+  #Run on Manual execution
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - 'master'
+    paths:
+      #- "bicep/main-active-active.parameters.json"
+      - "bicep/main.bicep"
+      - ".github/workflows/deploymentCheker-active-active.yml"
+
+env:
+  RG: "Automation-Actions-OPNAZURE-Active-Active-${{ github.run_number }}" #The resource group we're deploying to.
+  Location: "eastus"
+  ParamFilePath: "bicep/main.parameters.json" #Path to parameter file
+  TemplateFilePath: "bicep/main.bicep"
+  OPNsense-PIP: "OPNsense-PublicIP"
+  VNET: "OPN-VNET"
+  VNETAddress: "10.0.0.0/16"
+  UntrustedSubnet: "Untrusted-Subnet"
+  UntrustedSubnetAddress: "10.0.0.0/24"
+  TrustedSubnet: "Trusted-Subnet"
+  TrustedSubnetAddress: "10.0.1.0/24"
+  scenarioOption: "Active-Active"
+  existingvirtualNetwork: "existing"
+  DeployWindows: false
+  OpnScriptURI: "https://raw.githubusercontent.com/dmauser/opnazure/master/scripts/"
+  DEPNAME: "Dep-OPNsense-Active-Active-${{ github.run_number }}" #Deployment Name
+  AZCLIVERSION: 2.36.0 #Pinning to a specific AZ CLI version
+
+jobs:
+  Validation:
+    runs-on: ubuntu-latest
+    steps:
+      #Get the code files from the repo
+      - uses: actions/checkout@v3
+
+      - name: Job parameter check
+        run: |
+          RG='${{ env.RG }}'
+          echo "RG is: $RG"
+
+          echo "Param file path is: ${{ env.ParamFilePath }}"
+          echo "Template file path is: ${{ env.TemplateFilePath }}"
+          echo "Deployment name is ${{ env.DEPNAME }}"
+          echo "AZ cli version is ${{ env.AZCLIVERSION }}"
+
+      - name: Arm Parameter file check exists
+        shell: pwsh
+        run: |
+          Write-Output "Checking parameter file existance/contents"
+          $paramFilePath="${{ env.ParamFilePath }}"
+          Test-Path $paramFilePath
+
+          if (Test-Path $paramFilePath) {
+            $paramFileContent=Get-Content $paramFilePath
+            Write-Output $paramFileContent
+          }
+
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: false
+          environment: azurecloud
+          allow-no-subscriptions: false
+
+      - name: Validate Infrastructure deployment
+        uses: Azure/cli@1.0.6
+        with:
+          azcliversion: ${{ env.AZCLIVERSION }}
+          inlineScript: |
+            az vm list
