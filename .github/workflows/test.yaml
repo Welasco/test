@@ -63,10 +63,13 @@ jobs:
         shell: pwsh
         run: |
           cd ARM
+          echo ${GITHUB_REF#refs/heads/}
           dir
           ls -la
+
 
       - name: GIT Push Json file
         uses: actions-x/commit@v6
         with:
           message: Adding auto compiled bicep json
+          branch: ${GITHUB_REF#refs/heads/}
