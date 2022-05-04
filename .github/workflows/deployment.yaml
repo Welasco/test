@@ -6,7 +6,7 @@ on:
 
   pull_request:
     branches:
-      - 'master'
+      - 'main'
     paths:
       #- "bicep/main-active-active.parameters.json"
       - "bicep/main.bicep"
