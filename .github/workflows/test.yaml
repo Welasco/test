@@ -3,18 +3,18 @@
 name: BicepBuild
 
 on:
-  #push:
-    #branches:
-     #- 'master'
+  push:
+    branches:
+     - 'main'
      #- 'dev'
-    #paths:
-    #- 'bicep/*'
-    #- ".github/workflows/bicepBuild.yml"
+    paths:
+    - 'bicep/*'
+    - ".github/workflows/test.yaml"
 
   #Run when PR's are made to master, where the changes are in the bicep directory or this workflow file itself
-  pull_request:
-    branches:
-     - 'master'
+  # pull_request:
+  #   branches:
+  #    - 'main'
   #   paths:
   #     - "bicep/*"
   #     - ".github/workflows/bicepBuild.yml"
@@ -63,10 +63,13 @@ jobs:
         shell: pwsh
         run: |
           cd ARM
+          env
           dir
           ls -la
+
 
       - name: GIT Push Json file
         uses: actions-x/commit@v6
         with:
           message: Adding auto compiled bicep json
+          branch: v3

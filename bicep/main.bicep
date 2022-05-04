@@ -26,3 +26,16 @@ resource stg2 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
   kind: 'BlobStorage'
 }
+
+resource stg3 'Microsoft.Storage/storageAccounts@2021-06-01' = {
+  name: '${stgName}3'
+  location: 'eastus'
+  sku: {
+    name: 'Standard_LRS'
+
+  }
+  properties: {
+    accessTier: 'Cool'
+  }
+  kind: 'BlobStorage'
+}
