@@ -10,7 +10,7 @@ on:
     paths:
       #- "bicep/main-active-active.parameters.json"
       - "bicep/main.bicep"
-      - ".github/workflows/deploymentv2.yml"
+      - ".github/workflows/deploymentv2.yaml"
 
 env:
   RG: "Automation-Actions-OPNAZURE-Active-Active-${{ github.run_number }}" #The resource group we're deploying to.
@@ -48,29 +48,37 @@ jobs:
           echo "Deployment name is ${{ env.DEPNAME }}"
           echo "AZ cli version is ${{ env.AZCLIVERSION }}"
 
-      - name: Arm Parameter file check exists
-        shell: pwsh
-        run: |
-          Write-Output "Checking parameter file existance/contents"
-          $paramFilePath="${{ env.ParamFilePath }}"
-          Test-Path $paramFilePath
+          echo "GITHUB_BASE_REF is: ${{ github.GITHUB_BASE_REF }}"
+          echo "GITHUB_HEAD_REF is: ${{ github.GITHUB_HEAD_REF }}"
+          echo "GITHUB_REF is: ${{ github.GITHUB_REF }}"
+          echo "GITHUB_REF_NAME is: ${{ github.GITHUB_REF_NAME }}"
+          OpnScriptURI=$(echo ${{ env.OpnScriptURI }} | sed -e "s_master_${GITHUB_HEAD_REF}_")
+          echo $OpnScriptURI
+          env
 
-          if (Test-Path $paramFilePath) {
-            $paramFileContent=Get-Content $paramFilePath
-            Write-Output $paramFileContent
-          }
+      # - name: Arm Parameter file check exists
+      #   shell: pwsh
+      #   run: |
+      #     Write-Output "Checking parameter file existance/contents"
+      #     $paramFilePath="${{ env.ParamFilePath }}"
+      #     Test-Path $paramFilePath
 
-      - name: Azure Login
-        uses: Azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          enable-AzPSSession: false
-          environment: azurecloud
-          allow-no-subscriptions: false
+      #     if (Test-Path $paramFilePath) {
+      #       $paramFileContent=Get-Content $paramFilePath
+      #       Write-Output $paramFileContent
+      #     }
 
-      - name: Validate Infrastructure deployment
-        uses: Azure/cli@v1
-        with:
-          azcliversion: ${{ env.AZCLIVERSION }}
-          inlineScript: |
-            az vm list
+      # - name: Azure Login
+      #   uses: Azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+      #     enable-AzPSSession: false
+      #     environment: azurecloud
+      #     allow-no-subscriptions: false
+
+      # - name: Validate Infrastructure deployment
+      #   uses: Azure/cli@v1
+      #   with:
+      #     azcliversion: ${{ env.AZCLIVERSION }}
+      #     inlineScript: |
+      #       az vm list
