@@ -10,7 +10,7 @@ on:
     paths:
       #- "bicep/main-active-active.parameters.json"
       - "bicep/main.bicep"
-      - ".github/workflows/deploymentv2.yml"
+      - ".github/workflows/deploymentv2.yaml"
 
 env:
   RG: "Automation-Actions-OPNAZURE-Active-Active-${{ github.run_number }}" #The resource group we're deploying to.
