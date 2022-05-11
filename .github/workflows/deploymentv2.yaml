@@ -52,8 +52,8 @@ jobs:
           echo "GITHUB_HEAD_REF is: ${{ github.GITHUB_HEAD_REF }}"
           echo "GITHUB_REF is: ${{ github.GITHUB_REF }}"
           echo "GITHUB_REF_NAME is: ${{ github.GITHUB_REF_NAME }}"
-          url=$(echo ${{ env.OpnScriptURI }} | sed -e "s_master_${GITHUB_HEAD_REF}_")
-          echo $url
+          OpnScriptURI=$(echo ${{ env.OpnScriptURI }} | sed -e "s_master_${GITHUB_HEAD_REF}_")
+          echo $OpnScriptURI
           env
 
       # - name: Arm Parameter file check exists
