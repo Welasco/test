@@ -52,6 +52,7 @@ jobs:
           echo "GITHUB_HEAD_REF is: ${{ github.GITHUB_HEAD_REF }}"
           echo "GITHUB_REF is: ${{ github.GITHUB_REF }}"
           echo "GITHUB_REF_NAME is: ${{ github.GITHUB_REF_NAME }}"
+          env
 
       # - name: Arm Parameter file check exists
       #   shell: pwsh
