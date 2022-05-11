@@ -52,7 +52,7 @@ jobs:
           echo "GITHUB_HEAD_REF is: ${{ github.GITHUB_HEAD_REF }}"
           echo "GITHUB_REF is: ${{ github.GITHUB_REF }}"
           echo "GITHUB_REF_NAME is: ${{ github.GITHUB_REF_NAME }}"
-          url= echo ${{ OpnScriptURI }}" | sed -i "" "s_master_branch_"
+          url= echo ${{ OpnScriptURI }} | sed -e "s_master_branch_"
           echo $url
           env
 
