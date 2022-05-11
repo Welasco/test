@@ -48,7 +48,7 @@ jobs:
           echo "Deployment name is ${{ env.DEPNAME }}"
           echo "AZ cli version is ${{ env.AZCLIVERSION }}"
 
-          echo "Branch is: ${{ GITHUB_BASE_REF }}"
+          echo "Branch is: ${{ github.GITHUB_BASE_REF }}"
 
       # - name: Arm Parameter file check exists
       #   shell: pwsh
