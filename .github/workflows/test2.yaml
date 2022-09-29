@@ -14,5 +14,9 @@ jobs:
       - name: PowerShell Gallery Publisher
         shell: pwsh
         run: |
+          Write-Output "The line bellow is a dir:"
           dir
           Write-Output "Our value for GITHUB_REF is: ${{ env.GITHUB_REF }}"
+          Write-Output "Our value for env:GITHUB_REF is: $env:GITHUB_REF"
+          Write-Output "The live bellow is all env variables:"
+          Get-ChildItem env:
