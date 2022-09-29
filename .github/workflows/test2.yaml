@@ -24,3 +24,94 @@ jobs:
           Write-Output "Our value for env:GITHUB_REF is: $env:GITHUB_REF"
           Write-Output "The live bellow is all env variables:"
           Get-ChildItem env:
+
+      - id: files
+        uses: jitterbit/get-changed-files@v1
+        continue-on-error: true
+        with:
+          format: json
+
+      # Runs a set of commands using the runners shell
+      - name: Increment changed module versions
+        id: module_versions
+        shell: pwsh
+        run: |
+          # Automatically increment the 'build' version numbers on a PS module file
+
+          $files = '${{ steps.files.outputs.modified }}' | ConvertFrom-Json
+          
+          $moduleVersionRegex = [regex]"(?:ModuleVersion\s?=\s?')([\d\.]*)'" 
+          $moduleChangedFileList = $files | where-object { $_ -match '\.psm1$'}
+
+          if(![string]::IsNullOrEmpty($moduleChangedFileList)){
+            $moduleManifest = Get-Item AzureBasicLoadBalancerUpgrade/AzureBasicLoadBalancerUpgrade.psd1
+            $content = Get-Content $moduleManifest
+            If ($moduleVersionMatches = $moduleVersionRegex.matches($content)) {
+              If ($moduleVersionMatches.count -eq 1) {
+                $moduleVersionLine = $moduleVersionMatches[0].Groups[0].Value
+                $currentModuleVersion = $moduleVersionMatches[0].Groups[1].Value
+                $newVersion = ($env:GITHUB_REF).split('/')[-1] #refs/tags/v1.0.3
+                $newVersionLine = $moduleVersionLine -replace $currentModuleVersion,$newVersion
+                $moduleManifest | Set-Content -Value ($content -replace $moduleVersionLine,$newVersionLine)                
+                Write-Output "Variables: "
+                Write-Output "moduleVersionLine: $moduleVersionLine"
+                Write-Output "currentModuleVersion: $currentModuleVersion"
+                Write-Output "newVersion: $newVersion"
+                Write-Output "newVersionLine: $newVersionLine"
+                Write-Output "moduleChangedFileList: $moduleChangedFileList"
+              }
+            }
+          }
+          else{
+            Write-Output "No modules was changed"
+            Write-Output "Variables: "
+            Write-Output "moduleVersionLine: $moduleVersionLine"
+            Write-Output "currentModuleVersion: $currentModuleVersion"
+            Write-Output "newVersion: $newVersion"
+            Write-Output "newVersionLine: $newVersionLine"
+            Write-Output "moduleChangedFileList: $moduleChangedFileList"            
+          }
+
+          # ForEach ($moduleChangedFile in $moduleChangedFileList) {
+          #     try {
+          #       $moduleManifestPath = Get-Item -Path ($moduleChangedFile -replace '\.psm1$','.psd1') -ErrorAction Stop
+          #     }
+          #     catch {
+          #       Write-Error "Error locating .psd1 file for module '$moduleChangedFile'. This file should reside in the same directory as the psm1."
+          #     }
+              
+          #     $moduleManifest = Get-Item $moduleManifestPath
+          #     $content = Get-Content $moduleManifest
+          #     If ($moduleVersionMatches = $moduleVersionRegex.matches($content)) {
+          #         If ($moduleVersionMatches.count -eq 1) {
+          #             $moduleVersionLine = $moduleVersionMatches[0].Groups[0].Value
+          #             $currentModuleVersion = $moduleVersionMatches[0].Groups[1].Value
+          #             If ($version = $currentModuleVersion -as [version]) {
+          #                 $major = $version.Major
+          #                 $minor = $version.Minor
+          #                 $build = $version.Build + 1 # add 1 to current version build number
+          #                 $newVersion = [version]::new($major,$minor,$build)
+          #             }
+          #             Else {
+          #                 Write-Error "Version string '$currentModuleVersion' cannot be converted to type [Version]. File: '$moduleManifest'"
+          #             }
+          #             $newVersionLine = $moduleVersionLine -replace $currentModuleVersion,$newVersion
+          #             $moduleManifest | Set-Content -Value ($content -replace $moduleVersionLine,$newVersionLine)
+          #         }
+          #         Else {
+          #             Write-Error "More than one matches for regex '$moduleVersionRegex' found in file '$moduleManifest'"
+          #         }
+          #     }
+          # }
+          # # output whether modules were changed
+          # If ($moduleChangedFileList.count -eq 0) {
+          #   Write-Host "::set-output name=versions_changed::$($false)"
+          # }
+          # Else {
+          #    Write-Host "::set-output name=versions_changed::$($true)"
+          # }
+        
+      - name: GIT Push Json file
+        uses: actions-x/commit@v6
+        with:
+          message: Commiting new module version
