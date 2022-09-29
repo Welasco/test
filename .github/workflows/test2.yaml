@@ -43,6 +43,14 @@ jobs:
           $moduleVersionRegex = [regex]"(?:ModuleVersion\s?=\s?')([\d\.]*)'"
           #$moduleChangedFileList = $files | where-object { $_ -match '\.psm1$'}
 
+          # Git --tags
+          Write-Output "Git --tags: "
+          git -tag
+
+          # Get Previous Git Tag 2 skips (the one before the latest tag)
+          Write-Output "Get Previous Git Tag 2 skips (the one before the latest tag): "
+          git describe --abbrev=0 --tags "$(git rev-list --tags --skip=2 --max-count=1)"
+
           # Get Previous Git Tag (the one before the latest tag)
           Write-Output "Get Previous Git Tag (the one before the latest tag): "
           git describe --abbrev=0 --tags "$(git rev-list --tags --skip=1 --max-count=1)"
