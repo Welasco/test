@@ -55,6 +55,9 @@ jobs:
           $changes = git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
           $changedFileList = $changes -like "*AzureBasicLoadBalancerUpgrade/*"
 
+          Write-Output "changes: $changes"
+          Write-Output "changedFileList: $changedFileList"
+
           if(![string]::IsNullOrEmpty($changedFileList)){
             $moduleManifest = Get-Item AzureBasicLoadBalancerUpgrade/AzureBasicLoadBalancerUpgrade.psd1
             $content = Get-Content $moduleManifest
