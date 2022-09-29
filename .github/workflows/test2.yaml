@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+env:
+  gallerykey: "asdflkjsdofysdlfkjsdfoyu"
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -16,6 +19,7 @@ jobs:
         run: |
           Write-Output "The line bellow is a dir:"
           dir
+          Write-Output "Gallerykey is: $env:gallerykey"
           Write-Output "Our value for GITHUB_REF is: ${{ env.GITHUB_REF }}"
           Write-Output "Our value for env:GITHUB_REF is: $env:GITHUB_REF"
           Write-Output "The live bellow is all env variables:"
