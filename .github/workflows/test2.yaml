@@ -39,11 +39,23 @@ jobs:
           # Automatically increment the 'build' version numbers on a PS module file
 
           $files = '${{ steps.files.outputs.modified }}' | ConvertFrom-Json
-          
-          $moduleVersionRegex = [regex]"(?:ModuleVersion\s?=\s?')([\d\.]*)'" 
+
+          $moduleVersionRegex = [regex]"(?:ModuleVersion\s?=\s?')([\d\.]*)'"
           $moduleChangedFileList = $files | where-object { $_ -match '\.psm1$'}
 
-          if(![string]::IsNullOrEmpty($moduleChangedFileList)){
+          # Get Previous Git Tag (the one before the latest tag)
+          git describe --abbrev=0 --tags "$(git rev-list --tags --skip=1 --max-count=1)"
+
+          # List all changes since the latest Tag
+          git log "$(git describe --tags --abbrev=0)..HEAD" --oneline --raw
+
+          # Get all the changes since the tag before the latest one
+          git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
+
+          $changes = git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
+          $changedFileList = $changes -like "*AzureBasicLoadBalancerUpgrade/*"
+
+          if(![string]::IsNullOrEmpty($changedFileList)){
             $moduleManifest = Get-Item AzureBasicLoadBalancerUpgrade/AzureBasicLoadBalancerUpgrade.psd1
             $content = Get-Content $moduleManifest
             If ($moduleVersionMatches = $moduleVersionRegex.matches($content)) {
@@ -52,7 +64,7 @@ jobs:
                 $currentModuleVersion = $moduleVersionMatches[0].Groups[1].Value
                 $newVersion = ($env:GITHUB_REF).split('/')[-1] #refs/tags/v1.0.3
                 $newVersionLine = $moduleVersionLine -replace $currentModuleVersion,$newVersion
-                $moduleManifest | Set-Content -Value ($content -replace $moduleVersionLine,$newVersionLine)                
+                $moduleManifest | Set-Content -Value ($content -replace $moduleVersionLine,$newVersionLine)
                 Write-Output "Variables: "
                 Write-Output "moduleVersionLine: $moduleVersionLine"
                 Write-Output "currentModuleVersion: $currentModuleVersion"
@@ -69,7 +81,7 @@ jobs:
             Write-Output "currentModuleVersion: $currentModuleVersion"
             Write-Output "newVersion: $newVersion"
             Write-Output "newVersionLine: $newVersionLine"
-            Write-Output "moduleChangedFileList: $moduleChangedFileList"            
+            Write-Output "moduleChangedFileList: $moduleChangedFileList"
           }
 
           # ForEach ($moduleChangedFile in $moduleChangedFileList) {
@@ -79,7 +91,7 @@ jobs:
           #     catch {
           #       Write-Error "Error locating .psd1 file for module '$moduleChangedFile'. This file should reside in the same directory as the psm1."
           #     }
-              
+
           #     $moduleManifest = Get-Item $moduleManifestPath
           #     $content = Get-Content $moduleManifest
           #     If ($moduleVersionMatches = $moduleVersionRegex.matches($content)) {
@@ -110,7 +122,7 @@ jobs:
           # Else {
           #    Write-Host "::set-output name=versions_changed::$($true)"
           # }
-        
+
       - name: GIT Push Json file
         uses: actions-x/commit@v6
         with:
