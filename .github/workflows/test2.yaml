@@ -38,17 +38,20 @@ jobs:
         run: |
           # Automatically increment the 'build' version numbers on a PS module file
 
-          $files = '${{ steps.files.outputs.modified }}' | ConvertFrom-Json
+          #$files = '${{ steps.files.outputs.modified }}' | ConvertFrom-Json
 
           $moduleVersionRegex = [regex]"(?:ModuleVersion\s?=\s?')([\d\.]*)'"
-          $moduleChangedFileList = $files | where-object { $_ -match '\.psm1$'}
+          #$moduleChangedFileList = $files | where-object { $_ -match '\.psm1$'}
 
           # Get Previous Git Tag (the one before the latest tag)
+          Write-Output "Get Previous Git Tag (the one before the latest tag): "
           git describe --abbrev=0 --tags "$(git rev-list --tags --skip=1 --max-count=1)"
 
+          Write-Output "List all changes since the latest Tag: "
           # List all changes since the latest Tag
           git log "$(git describe --tags --abbrev=0)..HEAD" --oneline --raw
 
+          Write-Output "Get all the changes since the tag before the latest one"
           # Get all the changes since the tag before the latest one
           git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
 
@@ -73,7 +76,7 @@ jobs:
                 Write-Output "currentModuleVersion: $currentModuleVersion"
                 Write-Output "newVersion: $newVersion"
                 Write-Output "newVersionLine: $newVersionLine"
-                Write-Output "moduleChangedFileList: $moduleChangedFileList"
+                #Write-Output "moduleChangedFileList: $moduleChangedFileList"
               }
             }
           }
