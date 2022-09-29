@@ -45,7 +45,13 @@ jobs:
 
           # Git --tags
           Write-Output "Git --tags: "
-          git -tag
+          git tag
+
+          # List commit before the latest tag test
+          Write-Out "List commit before the latest tag test"
+          "$(git rev-list --tags --skip=2 --max-count=1)"
+          $(git rev-list --tags --skip=2 --max-count=1)
+          git rev-list --tags --skip=2 --max-count=1
 
           # Get Previous Git Tag 2 skips (the one before the latest tag)
           Write-Output "Get Previous Git Tag 2 skips (the one before the latest tag): "
