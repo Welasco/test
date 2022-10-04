@@ -106,6 +106,8 @@ jobs:
             Write-Output "moduleChangedFileList: $moduleChangedFileList"
           }
 
+          git status
+
           # ForEach ($moduleChangedFile in $moduleChangedFileList) {
           #     try {
           #       $moduleManifestPath = Get-Item -Path ($moduleChangedFile -replace '\.psm1$','.psd1') -ErrorAction Stop
