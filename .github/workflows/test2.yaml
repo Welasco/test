@@ -41,6 +41,7 @@ jobs:
             Write-Output "Invalid release version: $releaseVersion"
             exit 1
           }
+          gh
 
       # Runs a set of commands using the runners shell
       - name: Increment changed module versions
