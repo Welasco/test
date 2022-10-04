@@ -111,6 +111,12 @@ jobs:
           Write-Output "Git status:"
           git status
 
+          git add *
+
+          git commit -m "Increment module version"
+
+          git push
+
           # ForEach ($moduleChangedFile in $moduleChangedFileList) {
           #     try {
           #       $moduleManifestPath = Get-Item -Path ($moduleChangedFile -replace '\.psm1$','.psd1') -ErrorAction Stop
@@ -150,7 +156,7 @@ jobs:
           #    Write-Host "::set-output name=versions_changed::$($true)"
           # }
 
-      - name: GIT Push Json file
-        uses: actions-x/commit@v6
-        with:
-          message: Commiting new module version
+      # - name: GIT Push Json file
+      #   uses: actions-x/commit@v6
+      #   with:
+      #     message: Commiting new module version
