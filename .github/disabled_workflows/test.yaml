@@ -3,13 +3,13 @@
 name: BicepBuild
 
 on:
-  push:
-    branches:
-     - 'main'
-     #- 'dev'
-    paths:
-    - 'bicep/*'
-    - ".github/workflows/test.yaml"
+  # push:
+  #   branches:
+  #    - 'main'
+  #    #- 'dev'
+  #   paths:
+  #   - 'bicep/*'
+  #   - ".github/workflows/test.yaml"
 
   #Run when PR's are made to master, where the changes are in the bicep directory or this workflow file itself
   # pull_request:
@@ -27,6 +27,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: false
+          environment: azurecloud
+          allow-no-subscriptions: false      
 
       - name: ContextCheck-Event
         shell: pwsh
