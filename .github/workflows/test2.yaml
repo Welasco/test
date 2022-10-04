@@ -87,6 +87,7 @@ jobs:
                 $newVersion = ($env:GITHUB_REF).split('/')[-1] #refs/tags/v1.0.3
                 $newVersionLine = $moduleVersionLine -replace $currentModuleVersion,$newVersion
                 $moduleManifest | Set-Content -Value ($content -replace $moduleVersionLine,$newVersionLine)
+                Write-Output "ModuleManifest: $moduleManifest"
                 Write-Output "Variables: "
                 Write-Output "moduleVersionLine: $moduleVersionLine"
                 Write-Output "currentModuleVersion: $currentModuleVersion"
