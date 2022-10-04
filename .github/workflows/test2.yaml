@@ -157,4 +157,4 @@ jobs:
         uses: actions-x/commit@v6
         with:
           message: Commiting new module version
-          branch: master
+          branch: main
