@@ -1,0 +1,125 @@
+name: Publisher
+
+on:
+  release:
+    types: [published]
+
+env:
+  gallerykey: "asdflkjsdofysdlfkjsdfoyu"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      #Get the code files from the repo and all history
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      # Publish the module to the PowerShell Gallery
+      - name: PowerShell Gallery Publisher
+        shell: pwsh
+        run: |
+          Write-Output "The line bellow is a dir:"
+          dir
+          Write-Output "Gallerykey is: $env:gallerykey"
+          Write-Output "Our value for GITHUB_REF is: ${{ env.GITHUB_REF }}"
+          Write-Output "Our value for env:GITHUB_REF is: $env:GITHUB_REF"
+          Write-Output "The live bellow is all env variables:"
+          Get-ChildItem env:
+
+      # - id: files
+      #   uses: jitterbit/get-changed-files@v1
+      #   continue-on-error: true
+      #   with:
+      #     format: json
+
+      # Runs a set of commands using the runners shell
+      - name: Increment changed module versions
+        id: module_versions
+        shell: pwsh
+        run: |
+          # Automatically increment the 'build' version numbers on a PS module file
+
+          #$files = '${{ steps.files.outputs.modified }}' | ConvertFrom-Json
+
+          $moduleVersionRegex = [regex]"(?:ModuleVersion\s?=\s?')([\d\.]*)'"
+          #$moduleChangedFileList = $files | where-object { $_ -match '\.psm1$'}
+
+          # Git --tags
+          Write-Output "Git --tags: "
+          git tag
+
+          # List commit before the latest tag test
+          Write-Output "List commit before the latest tag test"
+          "$(git rev-list --tags --skip=2 --max-count=1)"
+          $(git rev-list --tags --skip=2 --max-count=1)
+          git rev-list --tags --skip=2 --max-count=1
+
+          # Get Previous Git Tag 2 skips (the one before the latest tag)
+          Write-Output "Get Previous Git Tag 2 skips (the one before the latest tag): "
+          git describe --abbrev=0 --tags "$(git rev-list --tags --skip=2 --max-count=1)"
+
+          # Get Previous Git Tag (the one before the latest tag)
+          Write-Output "Get Previous Git Tag (the one before the latest tag): "
+          git describe --abbrev=0 --tags "$(git rev-list --tags --skip=1 --max-count=1)"
+
+          Write-Output "List all changes since the latest Tag: "
+          # List all changes since the latest Tag
+          git log "$(git describe --tags --abbrev=0)..HEAD" --oneline --raw
+
+          Write-Output "Get all the changes since the tag before the latest one"
+          # Get all the changes since the tag before the latest one
+          git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
+
+          $changes = git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
+          $changedFileList = $changes -like "*AzureBasicLoadBalancerUpgrade/*"
+
+          Write-Output "changes: $changes"
+          Write-Output "changedFileList: $changedFileList"
+
+          if(![string]::IsNullOrEmpty($changedFileList)){
+            $moduleManifest = Get-Item AzureBasicLoadBalancerUpgrade/AzureBasicLoadBalancerUpgrade.psd1
+            $content = Get-Content $moduleManifest
+            If ($moduleVersionMatches = $moduleVersionRegex.matches($content)) {
+              If ($moduleVersionMatches.count -eq 1) {
+                $moduleVersionLine = $moduleVersionMatches[0].Groups[0].Value
+                $currentModuleVersion = $moduleVersionMatches[0].Groups[1].Value
+                $newVersion = ($env:GITHUB_REF).split('/')[-1].Substring(1) #refs/tags/v1.0.3
+                $newVersionLine = $moduleVersionLine -replace $currentModuleVersion,$newVersion
+                $moduleManifest | Set-Content -Value ($content -replace $moduleVersionLine,$newVersionLine)
+                Write-Output "ModuleManifest: $moduleManifest"
+                Write-Output "Variables: "
+                Write-Output "moduleVersionLine: $moduleVersionLine"
+                Write-Output "currentModuleVersion: $currentModuleVersion"
+                Write-Output "newVersion: $newVersion"
+                Write-Output "newVersionLine: $newVersionLine"
+                #Write-Output "moduleChangedFileList: $moduleChangedFileList"
+              }
+            }
+          }
+          else{
+            Write-Output "No modules was changed"
+            Write-Output "Variables: "
+            Write-Output "moduleVersionLine: $moduleVersionLine"
+            Write-Output "currentModuleVersion: $currentModuleVersion"
+            Write-Output "newVersion: $newVersion"
+            Write-Output "newVersionLine: $newVersionLine"
+            Write-Output "moduleChangedFileList: $moduleChangedFileList"
+          }
+          Write-Output "Current AzureBasicLoadBalancerUpgrade.psd1"
+          Get-Content AzureBasicLoadBalancerUpgrade/AzureBasicLoadBalancerUpgrade.psd1
+          Write-Output "Git status:"
+          git status
+          Write-Output "Git branch:"
+          git branch
+          Write-Output "Git checkout:"
+          git checkout main
+          Write-Output "Git globals:"
+          git config --global user.name 'Automated GitHub Action'
+          git config --global user.email 'no-reply@github.com'
+          Write-Output "Git add:"
+          git add -A
+          Write-Output "Git commit:"
+          git commit -am "Increment module version"
+          Write-Output "Git push:"
+          git push
