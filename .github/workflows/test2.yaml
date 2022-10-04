@@ -110,11 +110,18 @@ jobs:
           Get-Content AzureBasicLoadBalancerUpgrade/AzureBasicLoadBalancerUpgrade.psd1
           Write-Output "Git status:"
           git status
+          Write-Output "Git branch:"
           git branch
+          Write-Output "Git checkout:"
+          git checkout main
+          Write-Output "Git globals:"
           git config --global user.name 'Automated GitHub Action'
           git config --global user.email 'no-reply@github.com'
+          Write-Output "Git add:"
           git add -A
+          Write-Output "Git commit:"
           git commit -am "Increment module version"
+          Write-Output "Git push:"
           git push
 
           # ForEach ($moduleChangedFile in $moduleChangedFileList) {
