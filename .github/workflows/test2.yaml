@@ -105,7 +105,9 @@ jobs:
             Write-Output "newVersionLine: $newVersionLine"
             Write-Output "moduleChangedFileList: $moduleChangedFileList"
           }
-
+          Write-Output "Current AzureBasicLoadBalancerUpgrade.psd1"
+          Get-Content AzureBasicLoadBalancerUpgrade/AzureBasicLoadBalancerUpgrade.psd1
+          Write-Output "Git status:"
           git status
 
           # ForEach ($moduleChangedFile in $moduleChangedFileList) {
