@@ -12,7 +12,7 @@
     RootModule = 'vwsmoduletest'
 
     # Version number of this module.
-    ModuleVersion = '1.1.36'
+    ModuleVersion = '1.1.38'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
