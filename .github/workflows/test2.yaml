@@ -33,7 +33,7 @@ jobs:
         run: |
           # regex version checker
           $regex = 'v([1-9]\d*|0)(\.(([1-9]\d*)|0)){2}$'
-          $releaseVersion = ($env:GITHUB_REF).split('/')[-1]
+          $releaseVersion = ($env:GITHUB_REF).split('/').split('v')[-1]
           if($releaseVersion -match $regex){
             Write-Output "Valid release version format: $releaseVersion"
           }
