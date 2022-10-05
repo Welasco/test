@@ -32,8 +32,9 @@ jobs:
         shell: pwsh
         run: |
           # regex version checker
-          $regex = 'v([1-9]\d*|0)(\.(([1-9]\d*)|0)){2}$'
-          $releaseVersion = ($env:GITHUB_REF).split('/').split('v')[-1]
+          # Validate Release Version Number, it must be like: v0.1.0
+          $regex = '^v([0-9]\d*|0)(\.(([0-9]\d*)|0)){2}$'
+          $releaseVersion = ($env:GITHUB_REF).split('/')[-1]
           if($releaseVersion -match $regex){
             Write-Output "Valid release version format: $releaseVersion"
           }
