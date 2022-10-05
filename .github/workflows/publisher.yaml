@@ -77,6 +77,7 @@ jobs:
 
           # Check if there were any change under modules folder since the last release
           # If so then increment the module version
+          $moduleVersionRegex = [regex]"(?:ModuleVersion\s?=\s?')([\d\.]*)'"
           if(![string]::IsNullOrEmpty($changedFileList)){
             Write-Output "There were changes under modules folder since the last release"
             $moduleManifest = Get-Item $env:modulefilepath
