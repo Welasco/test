@@ -35,14 +35,15 @@ jobs:
           $regex = 'v([1-9]\d*|0)(\.(([1-9]\d*)|0)){2}$'
           $releaseVersion = ($env:GITHUB_REF).split('/')[-1]
           if($releaseVersion -match $regex){
-            Write-Output "Valid release version: $releaseVersion"
+            Write-Output "Valid release version format: $releaseVersion"
           }
           else{
-            Write-Output "Invalid release version: $releaseVersion"
+            Write-Output "Invalid release version format: $releaseVersion"
             exit 1
           }
-          gh
-          gh issue create --title "My new issue" --body "Here are more details."
+          #gh
+          #gh issue create --title "My new issue" --body "Here are more details."
+          #gh release create v1.0.26 --title "test v1.0.26" --notes "test v1.0.26"
 
       # Runs a set of commands using the runners shell
       - name: Increment changed module versions
