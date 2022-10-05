@@ -1,0 +1,154 @@
+name: Publisher
+
+on:
+  release:
+    types: [published]
+
+env:
+  gallerykey: ${{ secrets.POWERSHELLGALLERY }}
+  modulepath: "vwsmoduletest"
+  modulefilepath: "vwsmoduletest/vwsmoduletest.psd1"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      #Get the code files from the repo
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Step to validade if the release version follow the expected format otherwise fail the build
+      - name: Validate Release Version
+        shell: pwsh
+        run: |
+          # Validate Release Version Number, it must be like: v0.1.0
+          $regex = '^v([0-9]\d*|0)(\.(([0-9]\d*)|0)){2}$'
+          $releaseVersion = ($env:GITHUB_REF).split('/')[-1]
+          if($releaseVersion -match $regex){
+            Write-Output "Valid release version format: $releaseVersion"
+          }
+          else{
+            Write-Output "Invalid release version format: $releaseVersion"
+            exit 1
+          }
+
+      #Increment PowerShell module AzureBasicLoadBalancerUpgrade version based in the Github release version
+      - name: Increment AzureBasicLoadBalancerUpgrade version
+        id: module_versions
+        shell: pwsh
+        run: |
+          # # List commit before the latest tag test
+          # Write-Output "List all commits before the latest tag"
+          # git rev-list --tags --skip=2 --max-count=1
+          # Write-Output ""
+
+          # # Get Previous Git Tag 2 skips (the one before the latest tag)
+          # Write-Output "Get Previous Git Tag 2 skips (the one before the latest tag): "
+          # git describe --abbrev=0 --tags "$(git rev-list --tags --skip=2 --max-count=1)"
+          # Write-Output ""
+
+          # # Get Previous Git Tag (the one before the latest tag)
+          # Write-Output "Get Previous Git Tag (the one before the latest tag): "
+          # git describe --abbrev=0 --tags "$(git rev-list --tags --skip=1 --max-count=1)"
+          # Write-Output ""
+
+          # Write-Output "List all changes since the latest Tag: "
+          # # List all changes since the latest Tag
+          # git log "$(git describe --tags --abbrev=0)..HEAD" --oneline --raw
+          # Write-Output ""
+
+          # Write-Output "Get all the changes since the tag before the latest one"
+          # # Get all the changes since the tag before the latest one
+          # git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
+          # Write-Output ""
+
+          # Get all changes since the last release
+          $changes = git log "$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))..HEAD" --oneline --raw
+          $changedFileList = $changes -like "*$env:modulepath/*"
+
+          Write-Output "Changes since last release:"
+          $changes
+          Write-Output ""
+
+          Write-Output "Files changed since last release:"
+          $changedFileList
+          Write-Output ""
+
+          # Check if there were any change under modules folder since the last release
+          # If so then increment the module version
+          if(![string]::IsNullOrEmpty($changedFileList)){
+            Write-Output "There were changes under modules folder since the last release"
+            $moduleManifest = Get-Item $env:modulefilepath
+            $content = Get-Content $moduleManifest
+            If ($moduleVersionMatches = $moduleVersionRegex.matches($content)) {
+              If ($moduleVersionMatches.count -eq 1) {
+                $moduleVersionLine = $moduleVersionMatches[0].Groups[0].Value
+                Write-Output "moduleVersionLine: $moduleVersionLine"
+                $currentModuleVersion = $moduleVersionMatches[0].Groups[1].Value
+                Write-Output "currentModuleVersion: $currentModuleVersion"
+                $newVersion = ($env:GITHUB_REF).split('/')[-1].Substring(1) #refs/tags/v1.0.3
+                Write-Output "newVersion: $newVersion"
+                $newVersionLine = $moduleVersionLine -replace $currentModuleVersion,$newVersion
+                Write-Output "newVersionLine: $newVersionLine"
+                $moduleManifest | Set-Content -Value ($content -replace $moduleVersionLine,$newVersionLine)
+              }
+            }
+            Write-Output "Module version incremented. File $env:modulefilepath output:"
+            Get-Content $env:modulefilepath
+            Write-Host "::set-output name=modulechanged::$($true)"
+          }
+          else{
+            Write-Output "No changes detected under modules folder since the last release. Skipping module version increment."
+            Write-Host "::set-output name=modulechanged::$($false)"
+          }
+
+      # Git Commit and Push changes in case of a module version increment
+      - name: Git Commit and Push
+        id: git_commit_push
+        if: ${{ steps.module_versions.outputs.modulechanged == 'true' }}
+        shell: pwsh
+        run: |
+          Write-Output "Running command: Git status:"
+          git status
+          Write-Output ""
+
+          Write-Output "Running command: Git branch:"
+          git branch
+          Write-Output ""
+
+          Write-Output "Running command: Git checkout main:"
+          git checkout main
+          Write-Output ""
+
+          Write-Output "Running command: Setting Git globals:"
+          git config --global user.name 'Automated GitHub Action'
+          git config --global user.email 'no-reply@github.com'
+          Write-Output ""
+
+          Write-Output "Running command: Running command: Git add -A:"
+          git add -A
+          Write-Output ""
+
+          Write-Output "Running command: Git commit:"
+          git commit -am "Increment module version"
+          Write-Output ""
+
+          Write-Output "Running command: Git push:"
+          git push
+
+      # Publish the module to the PowerShell Gallery
+      - name: PowerShell Gallery Publisher
+        id: publish
+        if: ${{ steps.module_versions.outputs.modulechanged == 'true' }}
+        shell: pwsh
+        run: |
+          try{
+            Write-Output "Publishing module to PowerShell Gallery"
+            Publish-Module -Path "${{ env.modulepath }}" -NuGetApiKey "${{ env.gallerykey }}"
+          }
+          catch{
+            Write-Output "Error publishing module to PowerShell Gallery"
+            Write-Output $_
+            exit 1
+          }
