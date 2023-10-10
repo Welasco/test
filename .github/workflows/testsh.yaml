@@ -21,8 +21,8 @@ on:
         type: string
 
 env:
-  rg: ''
-  amlw: ''
+  rg: '****'
+  amlw: '****'
 
 jobs:
   build:
