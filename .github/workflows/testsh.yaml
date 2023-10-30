@@ -45,3 +45,4 @@ jobs:
         echo "The value of rg is -- ${{ env.rg }}"
         echo "The value of amlw is -- ${{ env.amlw }}"
         jq --help
+        exit 1
