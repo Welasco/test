@@ -22,6 +22,8 @@ on:
   workflow_run:
     workflows: [Create Azure Machine Learning workspace]
     types: [completed]
+  repository_dispatch:
+    types: [deploy-model]
 
 env:
   rg: '****'
