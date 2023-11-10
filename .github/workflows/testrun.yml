@@ -19,6 +19,21 @@ on:
         required: true
         default: 'mlw-dev-mlops'
         type: string
+      aml_flow_deployment_name:
+        description: 'Azure Machine Learning flow deployment name'
+        required: true
+        default: 'mlflow-deployment'
+        type: string
+      aml_endpoint_name:
+        description: 'Azure Machine Learning endpoint name'
+        required: true
+        default: 'diabetes-mlflow-mma'
+        type: string
+      aml_model_name:
+        description: 'Azure Machine Learning model name'
+        required: true
+        default: 'diabetes-data-example'
+        type: string
   workflow_run:
     workflows: [Create Azure Machine Learning workspace]
     types: [completed]
@@ -28,6 +43,9 @@ on:
 env:
   rg: '****'
   amlw: '****'
+  aml_flow_deployment_name: '****'
+  aml_endpoint_name: '****'
+  aml_model_name: '****'
 
 jobs:
   build:
@@ -39,14 +57,22 @@ jobs:
         if [[ "${{ github.event_name }}" == "push" ]]; then
           echo "rg=${{ env.rg }}" >> "$GITHUB_ENV"
           echo "amlw=${{ env.amlw }}" >> "$GITHUB_ENV"
+          echo "aml_flow_deployment_name=${{ env.aml_flow_deployment_name }}" >> "$GITHUB_ENV"
+          echo "aml_endpoint_name=${{ env.aml_endpoint_name }}" >> "$GITHUB_ENV"
+          echo "aml_model_name=${{ env.aml_model_name }}" >> "$GITHUB_ENV"
         else
           echo "rg=${{ github.event.inputs.resource_group }}" >> "$GITHUB_ENV"
           echo "amlw=${{ github.event.inputs.aml_workspace }}" >> "$GITHUB_ENV"
+          echo "aml_flow_deployment_name=${{ github.event.inputs.aml_flow_deployment_name }}" >> "$GITHUB_ENV"
+          echo "aml_endpoint_name=${{ github.event.inputs.aml_endpoint_name }}" >> "$GITHUB_ENV"
+          echo "aml_model_name=${{ github.event.inputs.aml_model_name }}" >> "$GITHUB_ENV"
         fi
-        echo "The value of rg is -- ${{ env.rg }}"
-        echo "The value of amlw is -- ${{ env.amlw }}"
+
     - name: Print
       run: |
         echo "The value of rg is -- ${{ env.rg }}"
         echo "The value of amlw is -- ${{ env.amlw }}"
-        jq --help
+        echo "The value of aml_flow_deployment_name is -- ${{ env.aml_flow_deployment_name }}"
+        echo "The value of aml_endpoint_name is -- ${{ env.aml_endpoint_name }}"
+        echo "The value of aml_model_name is -- ${{ env.aml_model_name }}"
+        #jq --help
